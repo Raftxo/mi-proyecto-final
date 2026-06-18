@@ -1,18 +1,18 @@
 import { useEffect, useRef } from 'react'
-import bufandaImg from '../assets/bufanda.png'
-import calcetinesImg from '../assets/calcetines.png'
-import carteraImg from '../assets/cartera.png'
-import gorraImg from '../assets/gorra.png'
-import heroImg from '../assets/hero.png'
-import camiseta1img from '../assets/camisetaAntenas.png'
-import camiseta2img from '../assets/camisetaJaula.png'
-import camiseta3img from '../assets/camisetaRouter.png'
-import camiseta4img from '../assets/camisetaPing.png'
-import sudadera1img from '../assets/sudadera1.png'
-import sudadera2img from '../assets/sudadera2.png'
-import sudadera3img from '../assets/sudadera3.png'
-import sudadera4img from '../assets/sudadera4.png'
-import mapImg from '../assets/hero.png'
+import bufandaImg from '../assets/bufanda.webp'
+import calcetinesImg from '../assets/calcetines.webp'
+import carteraImg from '../assets/cartera.webp'
+import gorraImg from '../assets/gorra.webp'
+import heroImg from '../assets/hero.webp'
+import camiseta1img from '../assets/camisetaAntenas.webp'
+import camiseta2img from '../assets/camisetaJaula.webp'
+import camiseta3img from '../assets/camisetaRouter.webp'
+import camiseta4img from '../assets/camisetaPing.webp'
+import sudadera1img from '../assets/sudadera1.webp'
+import sudadera2img from '../assets/sudadera2.webp'
+import sudadera3img from '../assets/sudadera3.webp'
+import sudadera4img from '../assets/sudadera4.webp'
+import mapImg from '../assets/hero.webp'
 
 const WHEEL_SCROLL_SPEED = 16
 
@@ -251,6 +251,9 @@ function MainContent({ onActiveSectionChange }) {
           className="hero-image"
           src={heroImg}
           alt="Chaqueta futurista de proteccion electromagnetica para uso diario"
+          width="360"
+          height="360"
+          fetchpriority="high"
         />
       </section>
 
@@ -275,6 +278,9 @@ function MainContent({ onActiveSectionChange }) {
                   className="product-image"
                   src={product.image}
                   alt={product.imageAlt}
+                  width="280"
+                  height="175"
+                  loading="lazy"
                 />
                 <h3>{product.name}</h3>
                 <p>{product.description}</p>
@@ -319,6 +325,9 @@ function MainContent({ onActiveSectionChange }) {
           className="map-image"
           src={mapImg}
           alt="Mapa ficticio de la tienda Faraday Fit en una zona sin cobertura"
+          width="380"
+          height="380"
+          loading="lazy"
         />
       </section>
     </main>
