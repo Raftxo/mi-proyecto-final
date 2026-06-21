@@ -38,9 +38,9 @@ import sudadera3_100 from '../assets/sudadera3-100.webp'
 import sudadera4img from '../assets/sudadera4.webp'
 import sudadera4_300 from '../assets/sudadera4-300.webp'
 import sudadera4_100 from '../assets/sudadera4-100.webp'
-import mapImg from '../assets/hero.webp'
-import map300 from '../assets/hero-300.webp'
-import map100 from '../assets/hero-100.webp'
+import mapImg from '../assets/mapa.png'
+import map300 from '../assets/mapa.png'
+import map100 from '../assets/mapa.png'
 
 const WHEEL_SCROLL_SPEED = 16
 
