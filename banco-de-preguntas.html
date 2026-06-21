@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banco de preguntas</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --surface: #ffffff;
+      --text: #172033;
+      --muted: #627083;
+      --line: #d9e2ee;
+      --primary: #2458d3;
+      --primary-soft: #e9efff;
+      --correct: #147a45;
+      --correct-soft: #e8f7ef;
+      --wrong: #b42318;
+      --wrong-soft: #fff0ee;
+      --shadow: 0 18px 45px rgba(23, 32, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .page-header,
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .page-header {
+      padding: 32px 0 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .intro {
+      margin: 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 24px 0 28px;
+    }
+
+    .pill {
+      min-height: 40px;
+      padding: 8px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .question-list {
+      display: grid;
+      gap: 18px;
+      padding-bottom: 48px;
+    }
+
+    .question-card {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--primary);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .question-title {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: start;
+      margin: 0 0 16px;
+      font-size: 1.08rem;
+      font-weight: 800;
+    }
+
+    .question-number {
+      display: inline-grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 0.95rem;
+    }
+
+    .answers {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .answer-button {
+      display: grid;
+      grid-template-columns: 30px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+      min-height: 54px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcff;
+      color: var(--text);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    .answer-button:hover {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      transform: translateY(-1px);
+    }
+
+    .answer-button:focus-visible {
+      outline: 4px solid rgba(36, 88, 211, 0.25);
+      outline-offset: 2px;
+    }
+
+    .answer-letter {
+      display: inline-grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 999px;
+      background: #eef3f8;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .answer-result {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .question-card.is-answered {
+      border-left-color: var(--correct);
+    }
+
+    .answer-button.is-correct {
+      border-color: var(--correct);
+      background: var(--correct-soft);
+    }
+
+    .answer-button.is-correct .answer-letter,
+    .answer-button.is-correct .answer-result {
+      background: var(--correct);
+      color: #ffffff;
+    }
+
+    .answer-button.is-wrong {
+      border-color: var(--wrong);
+      background: var(--wrong-soft);
+    }
+
+    .answer-button.is-wrong .answer-letter,
+    .answer-button.is-wrong .answer-result {
+      background: var(--wrong);
+      color: #ffffff;
+    }
+
+    @media (max-width: 640px) {
+      .page-header,
+      main {
+        width: min(100% - 20px, 1080px);
+      }
+
+      .question-card {
+        padding: 16px;
+      }
+
+      .answer-button {
+        grid-template-columns: 28px 1fr;
+      }
+
+      .answer-result {
+        grid-column: 2;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="page-header">
+      <h1>Banco de preguntas</h1>
+      <p class="intro">Selecciona una respuesta en cada pregunta. La opción correcta se marca en verde y, si te equivocas, tu elección queda señalada en rojo.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary" aria-label="Resumen del progreso">
+      <div class="pill" id="answered-count">0 respondidas</div>
+      <div class="pill" id="correct-count">0 correctas</div>
+    </section>
+
+    <section class="question-list" id="question-list" aria-label="Listado de preguntas"></section>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        text: "¿Por qué debemos evitar usar la etiqueta div para envolver todos los elementos de nuestra página?",
+        options: [
+          "Porque hace que el servidor consuma mucha más memoria.",
+          "Porque perjudica seriamente la accesibilidad y el posicionamiento en los motores de búsqueda.",
+          "Porque en el framework React está totalmente prohibido usar esa etiqueta."
+        ],
+        correct: 1
+      },
+      {
+        text: "¿Qué estado de CSS se activa automáticamente cuando el usuario pasa el puntero del ratón por encima de un enlace o botón?",
+        options: ["El estado focus", "El estado active", "El estado hover"],
+        correct: 2
+      },
+      {
+        text: "Trabajando con una caja flexible, ¿qué propiedad nos permite alinear los elementos horizontalmente, es decir, a lo largo del eje principal?",
+        options: ["La propiedad align items", "La propiedad justify content", "La propiedad flex direction"],
+        correct: 1
+      },
+      {
+        text: "Según la estructura estándar de React, ¿en qué carpeta trabajaremos creando nuestros componentes principales?",
+        options: ["En la carpeta public", "En la carpeta src", "En la raíz del proyecto"],
+        correct: 1
+      },
+      {
+        text: "¿Qué herramienta gratuita integrada en el navegador Google Chrome usamos para auditar la accesibilidad de una web?",
+        options: ["La pestaña Consola", "La extensión Thunder Client", "La herramienta Lighthouse"],
+        correct: 2
+      },
+      {
+        text: "En la estructura de React, ¿en qué archivo escribimos normalmente las reglas de diseño que afectan a toda la página en general?",
+        options: ["En el archivo App punto css", "En el archivo index punto css", "Dentro del archivo main punto jsx"],
+        correct: 1
+      },
+      {
+        text: "Si queremos transformar un menú que aparece en formato de lista vertical en uno completamente horizontal, la mejor herramienta de diseño es:",
+        options: ["El modelo Flexbox", "La propiedad Float", "El posicionamiento absoluto"],
+        correct: 0
+      },
+      {
+        text: "¿Qué archivo es considerado el documento de identidad de nuestro proyecto, donde se listan los comandos y dependencias?",
+        options: ["El archivo index de HTML", "El archivo vite config", "El archivo package punto json"],
+        correct: 2
+      },
+      {
+        text: "En React, las etiquetas que no tienen contenido de texto, como las imágenes, deben escribirse de una forma particular. ¿Cuál es?",
+        options: [
+          "Se pueden dejar abiertas sin problema.",
+          "Deben cerrarse obligatoriamente sobre sí mismas añadiendo una barra al final antes del cierre.",
+          "Deben usar siempre una etiqueta gemela de cierre aunque no tengan texto dentro."
+        ],
+        correct: 1
+      },
+      {
+        text: "¿A qué nos referimos cuando hablamos de la enfermedad de la divitis en el desarrollo web?",
+        options: [
+          "A un problema de rendimiento que afecta al navegador.",
+          "Al uso excesivo y sin sentido de la etiqueta genérica div en lugar de etiquetas semánticas con significado.",
+          "A un error crítico al escribir estilos en cascada."
+        ],
+        correct: 1
+      },
+      {
+        text: "Una regla de oro es que un componente en React debe devolver siempre:",
+        options: [
+          "Un único elemento padre que envuelva a todos los demás elementos de su interior.",
+          "Múltiples elementos sueltos independientes.",
+          "Solo contenido de texto plano sin etiquetas."
+        ],
+        correct: 0
+      },
+      {
+        text: "La carpeta public se utiliza habitualmente en nuestro proyecto para:",
+        options: [
+          "Guardar componentes que queramos compartir con otros.",
+          "Archivos estáticos puros como el icono que sale en la pestaña del navegador.",
+          "Configurar el servidor de bases de datos."
+        ],
+        correct: 1
+      },
+      {
+        text: "Siguiendo la jerarquía correcta de lectura de una página web, ¿cuántas etiquetas de título principal nivel uno debería haber?",
+        options: [
+          "Todas las que queramos siempre que destaquen secciones importantes.",
+          "Exclusivamente una por página.",
+          "Ninguna, la normativa recomienda usar títulos de nivel dos en adelante."
+        ],
+        correct: 1
+      },
+      {
+        text: "¿Para qué sirve aplicar la propiedad margin con valor cero directamente sobre la etiqueta body del documento?",
+        options: [
+          "Para obligar a que todo el texto aparezca centrado en la pantalla.",
+          "Para eliminar el borde en blanco indeseado que todos los navegadores añaden por defecto alrededor de la página.",
+          "Para cambiar el color de fondo a transparente."
+        ],
+        correct: 1
+      },
+      {
+        text: "¿Cuál es la etiqueta correcta para envolver los enlaces principales del menú de navegación?",
+        options: ["La etiqueta nav", "La etiqueta menu", "La etiqueta link"],
+        correct: 0
+      },
+      {
+        text: "Por motivos estrictos de accesibilidad, al definir el tamaño de los textos de nuestra web, la normativa exige usar siempre:",
+        options: [
+          "Medidas absolutas como los centímetros.",
+          "Unidades de medida relativas como los rem o los em, que se adaptan al usuario.",
+          "Unidades estáticas como los píxeles."
+        ],
+        correct: 1
+      },
+      {
+        text: "Para separar los enlaces de un menú de navegación de forma equitativa, dejando el mismo espacio entre ellos, solemos usar:",
+        options: ["El valor space around o space between", "El valor center", "El valor flex end"],
+        correct: 0
+      },
+      {
+        text: "El término usabilidad o experiencia de usuario se refiere principalmente a:",
+        options: [
+          "La velocidad a la que el servidor responde a las peticiones.",
+          "Lo fácil, lógico e intuitivo que resulta para una persona navegar y utilizar nuestra página.",
+          "La cantidad de colores y animaciones empleadas en la interfaz."
+        ],
+        correct: 1
+      },
+      {
+        text: "Para que una imagen sea accesible y leída por programas para personas invidentes, es obligatorio el uso de:",
+        options: [
+          "El atributo title",
+          "El atributo src",
+          "El atributo alt acompañado de una descripción precisa de la imagen."
+        ],
+        correct: 2
+      },
+      {
+        text: "¿Qué propiedad de CSS nos permite alinear los elementos de forma vertical, centrando el texto con respecto a la altura de la caja flexible?",
+        options: ["La propiedad justify content", "La propiedad text align", "La propiedad align items"],
+        correct: 2
+      },
+      {
+        text: "En React con Vite, ¿cuál es el archivo principal de JavaScript que arranca toda la aplicación en el navegador?",
+        options: ["El archivo main punto jsx", "El archivo App punto css", "El archivo Header punto jsx"],
+        correct: 0
+      },
+      {
+        text: "¿Qué extensión de archivo deben tener obligatoriamente nuestros componentes en React con Vite para que funcionen bien?",
+        options: ["Extensión punto html", "Extensión punto js o punto jsx", "Extensión punto css"],
+        correct: 1
+      },
+      {
+        text: "¿Por qué usamos className en lugar de class cuando programamos componentes en React?",
+        options: [
+          "Porque es más descriptivo para los demás programadores.",
+          "Porque class es una palabra reservada del lenguaje JavaScript y causaría un error en el código.",
+          "Para diferenciar los estilos de React de los estilos antiguos."
+        ],
+        correct: 1
+      },
+      {
+        text: "¿Qué contiene la carpeta llamada node modules?",
+        options: [
+          "Nuestro código de estilos y estructura web.",
+          "Las imágenes y recursos multimedia de nuestra web.",
+          "El código de las librerías descargadas por el gestor de paquetes, la cual no debe tocarse manualmente."
+        ],
+        correct: 2
+      },
+      {
+        text: "¿Qué ocurre si una imagen de nuestra web es puramente decorativa y no aporta ninguna información útil al usuario?",
+        options: [
+          "No se debe poner el atributo descriptivo bajo ningún concepto.",
+          "Se debe poner el atributo descriptivo pero dejándolo totalmente vacío.",
+          "Se debe ocultar la imagen usando estilos."
+        ],
+        correct: 1
+      },
+      {
+        text: "Tras crear el proyecto con Vite, ¿cuál es el siguiente paso obligatorio en la terminal antes de instalar nada?",
+        options: [
+          "Ejecutar npm run dev",
+          "Entrar en la carpeta usando el comando cd seguido del nombre del proyecto",
+          "Abrir el navegador"
+        ],
+        correct: 1
+      },
+      {
+        text: "Si diseñamos un botón que solo tiene un icono de una lupa y no tiene texto visible, ¿cómo lo hacemos accesible para un lector de pantalla?",
+        options: [
+          "Añadiendo el atributo aria label con el texto Buscar.",
+          "Poniendo el icono de la lupa el doble de grande.",
+          "Un botón sin texto no puede hacerse accesible de ninguna manera."
+        ],
+        correct: 0
+      },
+      {
+        text: "¿Qué valor debemos asignarle a la propiedad display en nuestro CSS para convertir un contenedor normal en una caja flexible?",
+        options: ["Valor block", "Valor grid", "Valor flex"],
+        correct: 2
+      },
+      {
+        text: "¿Qué significan las siglas internacionales WCAG en el mundo del desarrollo web?",
+        options: [
+          "Grupo de Animaciones de Código Web.",
+          "Pautas de Accesibilidad al Contenido Web.",
+          "Guía Mundial de Estilos en Cascada."
+        ],
+        correct: 1
+      },
+      {
+        text: "¿Qué evalúa el criterio de contraste de color en las normativas de accesibilidad web?",
+        options: [
+          "Que los colores elegidos pertenezcan a la misma paleta cromática.",
+          "Que exista suficiente diferencia de luminosidad entre el texto y su fondo para que sea legible por cualquier persona.",
+          "Que la página disponga obligatoriamente de un modo oscuro."
+        ],
+        correct: 1
+      },
+      {
+        text: "¿Qué comando se utiliza en la terminal para crear un proyecto nuevo de React utilizando Vite?",
+        options: [
+          "npm start react",
+          "npm create vite@latest mi-proyecto guion guion template react",
+          "react new mi-proyecto"
+        ],
+        correct: 1
+      },
+      {
+        text: "En la sintaxis de React, ¿cómo se aplica correctamente una clase de estilos a un elemento?",
+        options: ["Usando el atributo class", "Usando el atributo className", "Usando el atributo styleName"],
+        correct: 1
+      },
+      {
+        text: "¿Qué comando descarga e instala todas las dependencias necesarias creando la carpeta de módulos de Node?",
+        options: ["npm run build", "npm update", "npm install"],
+        correct: 2
+      },
+      {
+        text: "Para la zona inferior de la página web, donde ponemos el copyright o los enlaces legales, debemos usar:",
+        options: ["La etiqueta bottom", "La etiqueta end", "La etiqueta footer"],
+        correct: 2
+      },
+      {
+        text: "En CSS, ¿qué estado nos permite dar estilo visual a un elemento justo cuando el usuario llega a él usando la navegación por teclado?",
+        options: ["El estado hover", "El estado active", "El estado focus"],
+        correct: 2
+      },
+      {
+        text: "Para evaluar la navegación por teclado en nuestra página, ¿qué tecla estándar se usa para avanzar entre enlaces y botones?",
+        options: ["La tecla Enter", "La Flecha Derecha del teclado", "La tecla TAB o Tabulador"],
+        correct: 2
+      },
+      {
+        text: "¿Para qué sirve exactamente el comando npm run dev?",
+        options: [
+          "Para subir el código a la nube de GitHub.",
+          "Para encender el servidor local de desarrollo y ver la página web en el navegador.",
+          "Para borrar la base de datos del proyecto."
+        ],
+        correct: 1
+      },
+      {
+        text: "El contenido principal y único de una página web debe ir contenido siempre dentro de:",
+        options: ["La etiqueta body", "La etiqueta main", "La etiqueta article"],
+        correct: 1
+      },
+      {
+        text: "Para conectar el archivo de estilos de un componente con su archivo de lógica en React, la sintaxis correcta al principio del documento es:",
+        options: [
+          "Escribir la palabra import seguida de la ruta del archivo entre comillas.",
+          "Usar la etiqueta link como hacíamos en HTML.",
+          "Escribir la palabra require seguida del nombre del archivo."
+        ],
+        correct: 0
+      },
+      {
+        text: "¿Qué etiqueta semántica debemos usar para el bloque superior de la web donde solemos poner el logotipo y el título?",
+        options: ["La etiqueta main", "La etiqueta section", "La etiqueta header"],
+        correct: 2
+      }
+    ];
+
+    const list = document.querySelector("#question-list");
+    const answeredCount = document.querySelector("#answered-count");
+    const correctCount = document.querySelector("#correct-count");
+    const selectedAnswers = new Map();
+    const letters = ["A", "B", "C"];
+
+    function updateSummary() {
+      const answered = selectedAnswers.size;
+      const correct = [...selectedAnswers.entries()].filter(([index, selected]) => {
+        return questions[index].correct === selected;
+      }).length;
+
+      answeredCount.textContent = `${answered} respondidas`;
+      correctCount.textContent = `${correct} correctas`;
+    }
+
+    function chooseAnswer(questionIndex, selectedIndex) {
+      selectedAnswers.set(questionIndex, selectedIndex);
+      const card = document.querySelector(`[data-question-index="${questionIndex}"]`);
+      const buttons = card.querySelectorAll(".answer-button");
+      const question = questions[questionIndex];
+
+      card.classList.add("is-answered");
+
+      buttons.forEach((button, optionIndex) => {
+        const result = button.querySelector(".answer-result");
+        button.classList.remove("is-correct", "is-wrong");
+        button.setAttribute("aria-pressed", optionIndex === selectedIndex ? "true" : "false");
+        result.textContent = "";
+
+        if (optionIndex === question.correct) {
+          button.classList.add("is-correct");
+          result.textContent = "Correcta";
+        }
+
+        if (optionIndex === selectedIndex && selectedIndex !== question.correct) {
+          button.classList.add("is-wrong");
+          result.textContent = "Tu respuesta";
+        }
+      });
+
+      updateSummary();
+    }
+
+    function renderQuestions() {
+      questions.forEach((question, questionIndex) => {
+        const article = document.createElement("article");
+        article.className = "question-card";
+        article.dataset.questionIndex = questionIndex;
+
+        const title = document.createElement("h2");
+        title.className = "question-title";
+        title.innerHTML = `<span class="question-number">${questionIndex + 1}</span><span>${question.text}</span>`;
+
+        const answers = document.createElement("ul");
+        answers.className = "answers";
+
+        question.options.forEach((option, optionIndex) => {
+          const item = document.createElement("li");
+          const button = document.createElement("button");
+          button.className = "answer-button";
+          button.type = "button";
+          button.setAttribute("aria-pressed", "false");
+          button.innerHTML = `
+            <span class="answer-letter">${letters[optionIndex]}</span>
+            <span>${option}</span>
+            <span class="answer-result" aria-live="polite"></span>
+          `;
+          button.addEventListener("click", () => chooseAnswer(questionIndex, optionIndex));
+          item.append(button);
+          answers.append(item);
+        });
+
+        article.append(title, answers);
+        list.append(article);
+      });
+    }
+
+    renderQuestions();
+    updateSummary();
+  </script>
+</body>
+</html>
