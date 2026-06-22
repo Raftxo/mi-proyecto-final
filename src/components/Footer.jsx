@@ -13,7 +13,7 @@ function Footer() {
         paranoia saludable.
       </p>
       <p>
-        Contacto ficticio:{' '}
+        Contacto:{' '}
         <a href="mailto:hola@faradayfit.example" onKeyDown={handleLinkKeyDown}>
           hola@faradayfit.example
         </a>
